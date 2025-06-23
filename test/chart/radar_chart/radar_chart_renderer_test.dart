@@ -83,9 +83,16 @@ void main() {
         });
         return MockData.radarTouchedSpot;
       });
+
+      when(mockPainter.handleTitleTouch(captureAny, captureAny, captureAny))
+          .thenAnswer((inv) {
+        return null; // Return null for title touch in this test
+      });
+
       final touchResponse =
           renderRadarChart.getResponseAtLocation(MockData.offset1);
       expect(touchResponse.touchedSpot, MockData.radarTouchedSpot);
+      expect(touchResponse.touchedTitle, null);
       expect(results[0]['local_position'] as Offset, MockData.offset1);
       expect(results[0]['size'] as Size, mockSize);
       final paintHolder = results[0]['paint_holder'] as PaintHolder;

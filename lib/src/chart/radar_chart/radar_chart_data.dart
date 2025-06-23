@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 
 typedef GetTitleByIndexFunction = RadarChartTitle Function(
   int index,
-  double angle,
 );
 
 enum RadarShape {
@@ -21,7 +20,6 @@ class RadarChartTitle {
   const RadarChartTitle({
     required this.text,
     this.children,
-    this.angle = 0,
     this.positionPercentageOffset,
   });
 
@@ -30,9 +28,6 @@ class RadarChartTitle {
 
   /// [children] is used to draw additional titles outside the [RadarChart]
   final List<InlineSpan>? children;
-
-  /// [angle] is used to rotate the title
-  final double angle;
 
   /// [positionPercentageOffset] is the place of showing title on the [RadarChart]
   /// The higher the value of this field, the more titles move away from the chart.
@@ -112,17 +107,17 @@ class RadarChartData extends BaseChartData with EquatableMixin {
 
   /// [getTitle] is used to draw titles outside the [RadarChart]
   /// [getTitle] is type of [GetTitleByIndexFunction] so you should return a valid [RadarChartTitle]
-  /// for each [index] (we provide a default [angle] = index * 360 / titleCount)
+  /// for each [index]
   ///
   /// ```dart
-  /// getTitle: (index, angle) {
+  /// getTitle: (index) {
   ///   switch (index) {
   ///     case 0:
-  ///       return RadarChartTitle(text: 'Mobile or Tablet', angle: angle);
+  ///       return RadarChartTitle(text: 'Mobile or Tablet');
   ///     case 2:
-  ///       return RadarChartTitle(text: 'Desktop', angle: angle);
+  ///       return RadarChartTitle(text: 'Desktop');
   ///     case 1:
-  ///       return RadarChartTitle(text: 'TV', angle: angle);
+  ///       return RadarChartTitle(text: 'TV');
   ///     default:
   ///       return const RadarChartTitle(text: '');
   ///   }
@@ -442,20 +437,26 @@ class RadarTouchResponse extends BaseTouchResponse {
   RadarTouchResponse({
     required super.touchLocation,
     required this.touchedSpot,
+    this.touchedTitle,
   });
 
   /// touch happened on this spot. this spot has useful information about spot or entry
   final RadarTouchedSpot? touchedSpot;
+
+  /// touch happened on this title. this title has useful information about the touched title
+  final RadarTouchedTitle? touchedTitle;
 
   /// Copies current [RadarTouchResponse] to a new [RadarTouchResponse],
   /// and replaces provided values.
   RadarTouchResponse copyWith({
     Offset? touchLocation,
     RadarTouchedSpot? touchedSpot,
+    RadarTouchedTitle? touchedTitle,
   }) =>
       RadarTouchResponse(
         touchLocation: touchLocation ?? this.touchLocation,
         touchedSpot: touchedSpot ?? this.touchedSpot,
+        touchedTitle: touchedTitle ?? this.touchedTitle,
       );
 }
 
@@ -490,6 +491,34 @@ class RadarTouchedSpot extends TouchedSpot with EquatableMixin {
         touchedDataSetIndex,
         touchedRadarEntry,
         touchedRadarEntryIndex,
+      ];
+}
+
+/// It gives you information about the touched title.
+class RadarTouchedTitle extends TouchedSpot with EquatableMixin {
+  /// When touch happens on a title, a [RadarTouchedTitle] returns as an output,
+  /// it tells you where the touch happened.
+  /// [touchedTitle] contains the [RadarChartTitle] that was touched,
+  /// [touchedTitleIndex] tells you the index of the touched title,
+  /// You can also have the touched x and y in the chart as a [FlSpot] using [spot] value,
+  /// and you can have the local touch coordinates on the screen as a [Offset] using [offset] value.
+  RadarTouchedTitle(
+    this.touchedTitle,
+    this.touchedTitleIndex,
+    FlSpot spot,
+    Offset offset,
+  ) : super(spot, offset);
+
+  final RadarChartTitle touchedTitle;
+  final int touchedTitleIndex;
+
+  /// Used for equality check, see [EquatableMixin].
+  @override
+  List<Object?> get props => [
+        spot,
+        offset,
+        touchedTitle,
+        touchedTitleIndex,
       ];
 }
 

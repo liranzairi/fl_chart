@@ -1,10 +1,24 @@
-import 'dart:math' show cos, min, pi, sin;
+import 'dart:math' show cos, max, min, pi, sin;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:fl_chart/src/chart/base/base_chart/base_chart_painter.dart';
 import 'package:fl_chart/src/utils/canvas_wrapper.dart';
 import 'package:fl_chart/src/utils/utils.dart';
 import 'package:flutter/material.dart';
+
+extension on Rect {
+  Rect inflateToMinimumSize(Size minimumSize) {
+    final widthDiff = max<double>(0, minimumSize.width - width);
+    final heightDiff = max<double>(0, minimumSize.height - height);
+    final newRect = Rect.fromLTWH(
+      left - widthDiff / 2,
+      top - heightDiff / 2,
+      width + widthDiff,
+      height + heightDiff,
+    );
+    return newRect;
+  }
+}
 
 /// Paints [RadarChartData] in the canvas, it can be used in a [CustomPainter]
 class RadarChartPainter extends BaseChartPainter<RadarChartData> {
@@ -45,6 +59,8 @@ class RadarChartPainter extends BaseChartPainter<RadarChartData> {
   late TextPainter _titleTextPaint;
 
   List<RadarDataSetsPosition>? dataSetsPosition;
+
+  List<RadarTitlePosition>? _titlePositions;
 
   /// Paints [RadarChartData] into the provided canvas.
   @override
@@ -293,9 +309,10 @@ class RadarChartPainter extends BaseChartPainter<RadarChartData> {
       ..textDirection = TextDirection.ltr
       ..textScaler = holder.textScaler;
 
+    _titlePositions = <RadarTitlePosition>[];
+
     for (var index = 0; index < data.titleCount; index++) {
-      final baseTitleAngle = Utils().degrees(diffAngle * index);
-      final title = data.getTitle!(index, baseTitleAngle);
+      final title = data.getTitle!(index);
       final span =
           TextSpan(text: title.text, children: title.children, style: style);
       _titleTextPaint
@@ -311,29 +328,23 @@ class RadarChartPainter extends BaseChartPainter<RadarChartData> {
           sin(angle) * (radius * threshold + (_titleTextPaint.height / 2));
 
       final rect = Rect.fromLTWH(
-        titleX,
-        titleY,
+        titleX - _titleTextPaint.width / 2,
+        titleY - _titleTextPaint.height / 2,
         _titleTextPaint.width,
         _titleTextPaint.height,
       );
-      final rectDrawOffset = Offset(rect.left, rect.top);
 
-      final drawTitleDegrees = (angle * 180 / pi) + 90;
-      canvasWrapper.drawRotated(
-        size: rect.size,
-        rotationOffset: Offset(
-          -rect.width / 2,
-          -rect.height / 2,
+      _titlePositions?.add(
+        RadarTitlePosition(
+          title: title,
+          index: index,
+          rect: rect,
         ),
-        drawOffset: rectDrawOffset,
-        angle: drawTitleDegrees,
-        drawCallback: () {
-          canvasWrapper.drawText(
-            _titleTextPaint,
-            rect.topLeft,
-            title.angle - baseTitleAngle,
-          );
-        },
+      );
+
+      canvasWrapper.drawText(
+        _titleTextPaint,
+        rect.topLeft,
       );
     }
   }
@@ -440,6 +451,29 @@ class RadarChartPainter extends BaseChartPainter<RadarChartData> {
     return null;
   }
 
+  RadarTouchedTitle? handleTitleTouch(
+    Offset touchedPoint,
+    Size viewSize,
+    PaintHolder<RadarChartData> holder,
+  ) {
+    final titlePositions = _titlePositions;
+    if (titlePositions == null) return null;
+
+    for (final titlePosition in titlePositions) {
+      final rect = titlePosition.rect
+          .inflateToMinimumSize(const Size.square(kMinInteractiveDimension));
+      if (rect.contains(touchedPoint)) {
+        return RadarTouchedTitle(
+          titlePosition.title,
+          titlePosition.index,
+          FlSpot(touchedPoint.dx, touchedPoint.dy),
+          touchedPoint,
+        );
+      }
+    }
+    return null;
+  }
+
   @visibleForTesting
   double radarCenterY(Size size) => size.height / 2.0;
 
@@ -496,4 +530,16 @@ class RadarDataSetsPosition {
   const RadarDataSetsPosition(this.entriesOffset);
 
   final List<Offset> entriesOffset;
+}
+
+class RadarTitlePosition {
+  const RadarTitlePosition({
+    required this.title,
+    required this.index,
+    required this.rect,
+  });
+
+  final RadarChartTitle title;
+  final int index;
+  final Rect rect;
 }

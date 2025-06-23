@@ -150,7 +150,9 @@ class _RadarChartSample1State extends State<RadarChartSample1> {
                     }
                     setState(() {
                       selectedDataSetIndex =
-                          response?.touchedSpot?.touchedDataSetIndex ?? -1;
+                          response?.touchedSpot?.touchedDataSetIndex ??
+                              response?.touchedTitle?.touchedTitleIndex ??
+                              -1;
                     });
                   },
                 ),
@@ -158,25 +160,17 @@ class _RadarChartSample1State extends State<RadarChartSample1> {
                 radarBackgroundColor: Colors.transparent,
                 borderData: FlBorderData(show: false),
                 radarBorderData: const BorderSide(color: Colors.transparent),
-                titlePositionPercentageOffset: 0.2,
+                titlePositionPercentageOffset: 0,
                 titleTextStyle:
                     TextStyle(color: widget.titleColor, fontSize: 14),
-                getTitle: (index, angle) {
-                  final usedAngle =
-                      relativeAngleMode ? angle + angleValue : angleValue;
+                getTitle: (index) {
                   switch (index) {
                     case 0:
-                      return RadarChartTitle(
-                        text: 'Mobile or Tablet',
-                        angle: usedAngle,
-                      );
+                      return const RadarChartTitle(text: 'Mobile or Tablet');
                     case 2:
-                      return RadarChartTitle(
-                        text: 'Desktop',
-                        angle: usedAngle,
-                      );
+                      return const RadarChartTitle(text: 'Desktop');
                     case 1:
-                      return RadarChartTitle(text: 'TV', angle: usedAngle);
+                      return const RadarChartTitle(text: 'TV');
                     default:
                       return const RadarChartTitle(text: '');
                   }

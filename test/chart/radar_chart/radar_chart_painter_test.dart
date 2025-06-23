@@ -461,8 +461,8 @@ void main() {
             ],
           ),
         ],
-        getTitle: (index, angle) {
-          return RadarChartTitle(text: '$index$index', angle: angle);
+        getTitle: (index) {
+          return RadarChartTitle(text: '$index$index');
         },
         titleTextStyle: MockData.textStyle4,
         radarBorderData: const BorderSide(color: MockData.color6, width: 33),
@@ -577,8 +577,8 @@ void main() {
             borderWidth: 1,
           ),
         ],
-        getTitle: (index, angle) {
-          return RadarChartTitle(text: '$index$index', angle: angle);
+        getTitle: (index) {
+          return RadarChartTitle(text: '$index$index');
         },
         titleTextStyle: MockData.textStyle4,
         radarBorderData: const BorderSide(color: MockData.color6, width: 33),
@@ -762,8 +762,8 @@ void main() {
         radarBorderData: const BorderSide(color: MockData.color6, width: 33),
         tickBorderData: const BorderSide(color: MockData.color5, width: 55),
         radarBackgroundColor: MockData.color2,
-        getTitle: (index, angle) {
-          return RadarChartTitle(text: '$index-$angle', angle: angle);
+        getTitle: (index) {
+          return RadarChartTitle(text: '$index');
         },
       );
 
@@ -854,8 +854,8 @@ void main() {
         radarBorderData: const BorderSide(color: MockData.color6, width: 33),
         tickBorderData: const BorderSide(color: MockData.color5, width: 55),
         radarBackgroundColor: MockData.color2,
-        getTitle: (index, angle) {
-          return RadarChartTitle(text: '$index-$angle');
+        getTitle: (index) {
+          return RadarChartTitle(text: '$index');
         },
       );
 
